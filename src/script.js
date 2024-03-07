@@ -36,6 +36,27 @@ object3.position.x = 2
 
 scene.add(object1, object2, object3)
 
+// Raycaster
+const raycaster = new THREE.Raycaster()
+
+// const rayOrigin = new THREE.Vector3(-3, 0, 0)
+// const rayDirection = new THREE.Vector3(10, 0, 0) 
+// rayDirection.normalize() // converts Vector3 into unit vector, always normalize
+
+// raycaster.set(rayOrigin, rayDirection)
+
+// object1.updateMatrixWorld()
+// object2.updateMatrixWorld()
+// object3.updateMatrixWorld()
+
+// const intersect = raycaster.intersectObject(object2)
+// console.log(intersect)
+
+// const objectsToTest = [object1, object2, object3]
+
+// const intersects = raycaster.intersectObjects(objectsToTest)
+// console.log(intersects)
+
 /**
  * Sizes
  */
@@ -88,6 +109,23 @@ const clock = new THREE.Clock()
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
+
+    // Animate objects
+    object1.position.y = Math.sin(elapsedTime * 0.3) * 1.5
+    object2.position.y = Math.sin(elapsedTime * 0.8) * 1.5
+    object3.position.y = Math.sin(elapsedTime * 1.4) * 1.5
+
+    // Cast ray
+    const rayOrigin = new THREE.Vector3(-3, 0, 0)
+    const rayDirection = new THREE.Vector3(10, 0, 0) 
+    rayDirection.normalize()
+
+    raycaster.set(rayOrigin, rayDirection)
+    
+    const objectsToTest = [object1, object2, object3]
+    const intersects = raycaster.intersectObjects(objectsToTest)
+
+    console.log(intersects.length)
 
     // Update controls
     controls.update()
