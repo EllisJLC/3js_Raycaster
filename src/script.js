@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
 /**
  * Base
@@ -34,7 +36,7 @@ const object3 = new THREE.Mesh(
 )
 object3.position.x = 2
 
-scene.add(object1, object2, object3)
+// scene.add(object1, object2, object3)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -80,6 +82,34 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
+// Mouse
+
+const mouse = new THREE.Vector2()
+
+window.addEventListener('mousemove', (event) => {
+    mouse.x = event.clientX / sizes.width * 2 - 1
+    mouse.y = - (event.clientY / sizes.height * 2 - 1)
+})
+
+window.addEventListener('click', (event) => {
+    if (currentIntersect) {
+        switch(currentIntersect.object)
+        {
+            case object1:
+                console.log("object 1")
+            break
+
+            case object2:
+                console.log("object 2")
+            break
+            case object3:
+                console.log("object 3")
+            break
+        }
+        
+    }
+})
+
 /**
  * Camera
  */
@@ -101,10 +131,40 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+// Duck
+
+// Loaders
+const dracoLoader = new DRACOLoader()
+dracoLoader.setDecoderPath('/draco/')
+const gltfLoader = new GLTFLoader()
+gltfLoader.setDRACOLoader(dracoLoader)
+
+gltfLoader.load(
+    '/models/Duck/glTF-Draco/Duck.gltf',
+    (gltf) => {
+        gltf.scene.position.y = -0.9
+        scene.add(gltf.scene)
+    }
+)
+
+/**
+ * Lights
+ */
+// Ambient light
+const ambientLight = new THREE.AmbientLight('#ffffff', 0.9)
+scene.add(ambientLight)
+
+// Directional light
+const directionalLight = new THREE.DirectionalLight('#ffffff', 2.1)
+directionalLight.position.set(1, 2, 3)
+scene.add(directionalLight)
+
 /**
  * Animate
  */
 const clock = new THREE.Clock()
+
+let currentIntersect = null // sets up an intersection variable to contain which object is being intersected
 
 const tick = () =>
 {
@@ -116,17 +176,42 @@ const tick = () =>
     object3.position.y = Math.sin(elapsedTime * 1.4) * 1.5
 
     // Cast ray
-    const rayOrigin = new THREE.Vector3(-3, 0, 0)
-    const rayDirection = new THREE.Vector3(10, 0, 0) 
-    rayDirection.normalize()
 
-    raycaster.set(rayOrigin, rayDirection)
+    raycaster.setFromCamera(mouse, camera) // Cursor raycaster
+
+    // const rayOrigin = new THREE.Vector3(-3, 0, 0)
+    // const rayDirection = new THREE.Vector3(10, 0, 0) 
+    // rayDirection.normalize()
+
+    // raycaster.set(rayOrigin, rayDirection)
     
     const objectsToTest = [object1, object2, object3]
     const intersects = raycaster.intersectObjects(objectsToTest)
 
-    console.log(intersects.length)
+    for (const object of objectsToTest) {
+        object.material.color.set('#00ff00')
+    }
 
+    for (const intersect of intersects) {
+        intersect.object.material.color.set('#ff0000')
+    }
+
+    if (intersects.length) {
+        
+        if (currentIntersect === null) {
+            console.log('Mouse entered')
+        }
+
+        currentIntersect = intersects[0]
+    } else {
+
+        if (currentIntersect) {
+            console.log('Mouse exits')
+            currentIntersect = null
+        }
+        
+    }
+    
     // Update controls
     controls.update()
 
