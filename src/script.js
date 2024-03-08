@@ -139,11 +139,14 @@ dracoLoader.setDecoderPath('/draco/')
 const gltfLoader = new GLTFLoader()
 gltfLoader.setDRACOLoader(dracoLoader)
 
+let gltfObject = null
+
 gltfLoader.load(
     '/models/Duck/glTF-Draco/Duck.gltf',
     (gltf) => {
         gltf.scene.position.y = -0.9
         scene.add(gltf.scene)
+        gltfObject = gltf.scene
     }
 )
 
@@ -204,12 +207,20 @@ const tick = () =>
 
         currentIntersect = intersects[0]
     } else {
-
         if (currentIntersect) {
             console.log('Mouse exits')
             currentIntersect = null
         }
-        
+    }
+
+    if (gltfObject) {
+        const modelIntersects = raycaster.intersectObject(gltfObject)
+
+        if (modelIntersects.length) {
+            gltfObject.scale.set(1.2, 1.2, 1.2)
+        } else {
+            gltfObject.scale.set(1, 1, 1)
+        }
     }
     
     // Update controls
